@@ -34,24 +34,34 @@ void PhotonMap::store(Photon photon) {
 	box_max = vec2(std::max(box_max.x, photon.Pos.x), std::max(box_max.y, photon.Pos.y));
 }
 
+// 为什么不是纯粹的  start+num/2 呢， 虽然start+num/2 可保证左右子树的数量绝对平均
+// 但是由于 二叉树是由数组保存的，内含一个规则就是 index 的节点 子节点为 2*index和 2*index+1
+// 因此所有子节点除了叶子节点，必然都有两个子节点，不可能只有单单一个子节点，因此左右绝对平分不行，比如5个节点，如果 
+// 绝对平分 med节点就是3，  左边和右边都是2个，但是实际上不行，因为左边2个节点，只能一个father 一个child节点， father节点只能有一个孩子
+// 同理右边也father只有一个child，这样  2*index和 2*index+1的计算，右边的会越界， 2*3=6 > 5
+// 因此实际上是 左边 123 3个节点， med是4， 右边1 个节点 5 ，虽然不绝对平均，但是适用于数组表示的二叉树，且也是平衡的
+// 
+// 同理可知，如果是用链表表示的二叉树，不存在索引之间的计算关系，那么可以绝对平分，（但是链表会浪费空间）
 int calMed(int start, int end) {
 	int num = end - start + 1;
 	int med;
-	int as = 1, b = 2;
-	while (as < num) {
-		as += b;
-		b *= 2;
-	}
+ 	int as = 1, b = 2;
+ 	while (as < num) {
+ 		as += b;
+ 		b *= 2;
+ 	}
 	if (as == num)
 		return start + num / 2;
-	b /= 2;
-	if (as - b / 2 < num) {
-		return start + as / 2;
-	}
-	else
-		return start + as / 2 - (as - b / 2 - num);
+ 	b /= 2;
+ 	if (as - b / 2 < num) {
+ 		return start + as / 2;
+ 	}
+ 	else
+ 		return start + as / 2 - (as - b / 2 - num);
 }
 
+
+// 保证med左边都小于med对应的值，med右边都大于med对应的值
 void PhotonMap::MedianSplit(Photon* tempPhoton, int start, int end, int med, int axis) {
 	int l = start, r = end;
 	while (l < r) {
@@ -137,6 +147,8 @@ void PhotonMap::getNearestPhotons(Nearestphotons* np, int index) {
 		np->photons[np->found] = photon;
 	}
 	else {
+		// 使用的堆排序算法
+		// 首先是 刚好N个，第一次超出N个，那么初始化堆
 		if (np->got_heap == false) {
 			for (int i = np->found >> 1; i >= 1; i--) {
 				int par = i;
@@ -157,6 +169,7 @@ void PhotonMap::getNearestPhotons(Nearestphotons* np, int index) {
 			np->got_heap = true;
 		}
 
+		// 后面每次都是最大化堆堆顶出，然后新添加元素插入到合适位置
 		int par = 1;
 		while ((par << 1) <= np->found) {
 			int j = par << 1;

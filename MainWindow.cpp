@@ -86,12 +86,12 @@ void MainWindow::onNewFile()
 	float step = (float)width / num;
 	for (int i=0;i<num;i++)
 	{
-		for (int j=0;j<num;j++)
-		{
-// 			qreal x = getRandom()* width - width / 2;
-// 			qreal y = getRandom() * width - width / 2;
-			qreal x = i * step - width / 2;
-			qreal y = j * step - width / 2;
+// 		for (int j=0;j<num;j++)
+// 		{
+			qreal x = getRandom()* width - width / 2;
+			qreal y = getRandom() * width - width / 2;
+// 			qreal x = i * step - width / 2;
+// 			qreal y = j * step - width / 2;
 			auto item = scene.addEllipse(x - radius, y - radius, radius*2, radius*2);
 			item->setBrush(QBrush(QColor(0, 0, 0)));
 			item->setPen(QPen(QColor(0, 0, 0)));
@@ -99,7 +99,7 @@ void MainWindow::onNewFile()
 			photon.Pos = vec2(x, y);
 			photon.item = item;
 			photoMap.store(photon);
-		}
+//		}
 	}
 	photoMap.balance();
 }
@@ -121,7 +121,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 	if (obj == &view && event->type() == QEvent::MouseButtonPress) {
 		QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 		if (mouseEvent->button() == Qt::LeftButton) {
-			const int N = 1000;
+			const int N = 20;
 			Nearestphotons np;
 			QPointF pos = view.mapToScene(mouseEvent->pos());
 			np.Pos = vec2(pos.x(),pos.y());
